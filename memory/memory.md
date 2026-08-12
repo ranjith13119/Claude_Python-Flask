@@ -29,3 +29,12 @@ Log of important implementation decisions and conversation outcomes.
 - Tests: `tests/test_02-registration.py` — 12/12 pass (page renders, redirect, row created, hash verifies, lowercase email, dup/short/empty/whitespace errors). Full suite 27/27.
 - Branch: `feature/registration`. Spec: `.claude/spec/02-registration.md` (+ `.opencode/spec/` copy). Plans mirrored in both plans folders.
 - Gotcha: flask test client needs `init_db()` run first — tables only exist after `python app.py` startup block.
+
+## 2026-08-12 — Step 03 Login / Logout (implemented + tested)
+
+- `database/db.py`: added `get_user_by_email(email)` and `get_user_by_id(user_id)` — parameterized SELECT, return sqlite3.Row or None.
+- `app.py`: `/login` GET+POST — lowercase-normalized email, `check_password_hash`, generic "Invalid email or password" for wrong-password AND unknown-email AND empty fields (never reveals which failed); success `session["user_id"]` → 302 to landing. `/logout` now POST-only (CSRF-safe), `session.clear()` → 302. Added `@app.context_processor inject_current_user` → `current_user` (user row or None) for all templates. GET /logout = 405.
+- `templates/base.html`: session-aware navbar — logged in: email + Log out POST form button (new `.nav-user`/`.nav-logout` CSS using vars from `:root`); logged out: Sign in / Get started. `login.html`: form action → `url_for('login')`.
+- Key decision (user: "Always perform the best action"): POST-only logout (CSRF-safe), context processor for current_user (reused by Step 04 Profile), stale/invalid session user_id renders logged-out without crash or session mutation.
+- Tests: `tests/test_03-login-logout.py` — 17/17 pass (form render, redirect, session persistence, navbar states, case-insensitive email, generic errors, logout 302/405, stale session). Full suite 44/44.
+- Branch: `feature/login-logout`. Spec: `.claude/spec/03-login-logout.md` (+ `.opencode/spec/` mirror). Plans mirrored in both plans folders.

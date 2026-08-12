@@ -46,6 +46,16 @@ def create_user(name, email, password):
         return cur.lastrowid
 
 
+def get_user_by_email(email):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+
+def get_user_by_id(user_id):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+
+
 def init_db():
     with get_db() as conn:
         conn.executescript(SCHEMA)
