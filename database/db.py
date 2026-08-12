@@ -37,6 +37,15 @@ def get_db():
     return conn
 
 
+def create_user(name, email, password):
+    with get_db() as conn:
+        cur = conn.execute(
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            (name, email, generate_password_hash(password)),
+        )
+        return cur.lastrowid
+
+
 def init_db():
     with get_db() as conn:
         conn.executescript(SCHEMA)

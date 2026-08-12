@@ -34,3 +34,4 @@ Spendly: a Flask expense tracker built incrementally as a teaching project ("Ste
 - Store all the created specification in the specs folder 
 - Always create an detailed implementation plan for each spec and store it in plans folder
 - Strictly don't push any sensitive information to LLM, GIT, etc., 
+- Create a Log file under Logs folder for each feature 
