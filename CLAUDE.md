@@ -10,7 +10,7 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | 01 | Database Setup | `.claude/spec/01-database-setup.md` | ✅ Complete (tests: 15/15) |
 | 02 | Registration | `.claude/spec/02-registration.md` | ✅ Complete (tests: 12/12) |
 | 03 | Login / Logout | `.claude/spec/03-login-logout.md` | ✅ Complete (tests: 17/17) |
-| 04 | Profile | — | ⬜ Pending |
+| 04 | Profile | `.claude/spec/04-profile.md` | ✅ Complete (tests: 11/11) |
 | 05 | Backend connection | — | ⬜ Pending |
 | 06 | Expense list | — | ⬜ Pending |
 | 07 | Add expense | — | ⬜ Pending |
