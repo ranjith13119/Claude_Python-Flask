@@ -8,7 +8,7 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | Step | Feature | Spec | Status |
 | --- | --- | --- | --- |
 | 01 | Database Setup | `.claude/spec/01-database-setup.md` | ✅ Complete (tests: 15/15) |
-| 02 | Registration | — | ⬜ Pending |
+| 02 | Registration | `.claude/spec/02-registration.md` | ✅ Complete (tests: 12/12) |
 | 03 | Login / Logout | — | ⬜ Pending |
 | 04 | Profile | — | ⬜ Pending |
 | 05 | Backend connection | — | ⬜ Pending |

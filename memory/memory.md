@@ -19,3 +19,13 @@ Log of important implementation decisions and conversation outcomes.
 - Branch: `feature/database-setup`. Plan: `.claude/plans/01-database-setup.md` with a mirror copy in `.opencode/plans/01-database-setup.md` (keep both in sync; mirrors the spec-folder pattern).
 - Known inconsistency: commands reference `.claude/specs/` (plural) but folder is `.claude/spec/` (singular); `.opencode/spec/` holds a copy. To reconcile later.
 - When testing hash prefixes: werkzeug ≥3.x default method is `scrypt:`, assertions must accept both `pbkdf2:`/`scrypt:`.
+
+## 2026-08-12 — Step 02 Registration (implemented + tested)
+
+- User reversed the Step-01 DB decision (PR #2, `chore: stop tracking the local database file`): `expense_tracker.db` is now **gitignored, local-only** (updated AGENTS.md/CLAUDE.md accordingly in PR #3).
+- `database/db.py`: added `create_user(name, email, password)` — parameterized INSERT, werkzeug `scrypt:` hash, returns `lastrowid`; `sqlite3.IntegrityError` propagates (route catches).
+- `app.py`: `/register` now GET+POST. POST validates (all fields required, password ≥ 8 chars), normalizes email to lowercase, catches IntegrityError → "An account with this email already exists"; success = 302 redirect to `/login` (POST-Redirect-GET). Added `app.secret_key` from `SPENDLY_SECRET_KEY` env var (dev fallback) — foundation for Step 03 sessions.
+- `templates/register.html`: form action → `url_for('register')`. No new templates/CSS classes needed.
+- Tests: `tests/test_02-registration.py` — 12/12 pass (page renders, redirect, row created, hash verifies, lowercase email, dup/short/empty/whitespace errors). Full suite 27/27.
+- Branch: `feature/registration`. Spec: `.claude/spec/02-registration.md` (+ `.opencode/spec/` copy). Plans mirrored in both plans folders.
+- Gotcha: flask test client needs `init_db()` run first — tables only exist after `python app.py` startup block.
