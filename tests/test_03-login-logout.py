@@ -161,3 +161,26 @@ class TestStaleSession:
         assert response.status_code == 200
         assert "Sign in" in body
         assert "Log out" not in body
+
+
+class TestLandingHero:
+    def test_logged_out_landing_shows_hero_sign_in_button(self, client):
+        body = client.get("/").get_data(as_text=True)
+        assert 'class="btn-ghost">Sign in' in body
+
+    def test_logged_in_landing_hides_hero_sign_in_button(self, client):
+        client.post(
+            "/login",
+            data={"email": DEMO_EMAIL, "password": DEMO_PASSWORD},
+        )
+        body = client.get("/").get_data(as_text=True)
+        assert 'class="btn-ghost">Sign in' not in body
+        assert "My profile" in body
+
+    def test_logged_in_landing_hides_create_account_cta(self, client):
+        client.post(
+            "/login",
+            data={"email": DEMO_EMAIL, "password": DEMO_PASSWORD},
+        )
+        body = client.get("/").get_data(as_text=True)
+        assert "Create free account" not in body
