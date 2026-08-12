@@ -16,7 +16,7 @@ Spendly: a Flask expense tracker built incrementally as a teaching project ("Ste
 ## Gotchas
 
 - **README.md is UTF-16 LE encoded** — the Read tool fails on it with "Cannot read binary file". Read it via `Get-Content -Encoding Unicode` (Windows) or `iconv -f UTF-16` (Unix). It contains nothing useful beyond the title.
-- `database/db.py` implements the data layer (`get_db()`, `init_db()`, `seed_db()`) against `expense_tracker.db` at the project root. The DB file is committed to git by user decision (removed from `.gitignore` in Step 01) and reseeded idempotently on app startup (`python app.py`). Passwords use werkzeug's current default hash method (`scrypt:...`), not `pbkdf2:`.
+- `database/db.py` implements the data layer (`get_db()`, `init_db()`, `seed_db()`) against `expense_tracker.db` at the project root. The DB file is local-only (listed in `.gitignore`, untracked since PR #2) and reseeded idempotently on app startup (`python app.py`). Passwords use werkzeug's current default hash method (`scrypt:...`), not `pbkdf2:`.
 - Most routes in `app.py` are placeholders returning plain-text "coming in Step N" (e.g. `/logout`, `/expenses/add`). Only `/`, `/register`, `/login` render templates.
 - `file.md` at the root is junk (a stray terminal capture) — ignore it.
 
@@ -32,5 +32,5 @@ Spendly: a Flask expense tracker built incrementally as a teaching project ("Ste
 
 - Store our important conversation in the local memory 'memory.md' in the memory folder 
 - Store all the created specification in the specs folder 
-- Always create an implementation plan for each spec and store it in plans folder
+- Always create an detailed implementation plan for each spec and store it in plans folder
 - Strictly don't push any sensitive information to LLM, GIT, etc., 

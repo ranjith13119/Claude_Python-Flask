@@ -44,7 +44,7 @@ Specs live in `.claude/spec/` (mirrored in `.opencode/spec/`). Do not start a fe
 
 ## Run
 
-- `python app.py` → dev server on **port 5001** (not 5000), debug on. DB (`expense_tracker.db`, committed to git by user decision) is created/seeded idempotently on startup.
+- `python app.py` → dev server on **port 5001** (not 5000), debug on. DB (`expense_tracker.db`, local-only, gitignored since PR #2) is created/seeded idempotently on startup.
 - `python -m pytest` runs the suite.
 
 ## Gotchas
