@@ -113,6 +113,21 @@ a { color: inherit; text-decoration: none; }
 
 .nav-cta:hover { background: var(--accent) !important; }
 
+.nav-user { color: var(--ink-muted); }
+.nav-logout { display: inline-flex; margin: 0; }
+.nav-logout .nav-cta {
+    background: transparent !important;
+    color: var(--ink-muted) !important;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font: inherit;
+}
+.nav-logout .nav-cta:hover {
+    background: var(--danger-light) !important;
+    border-color: var(--danger);
+    color: var(--danger) !important;
+}
+
 /* ------------------------------------------------------------------ */
 /* Main                                                                */
 /* ------------------------------------------------------------------ */
