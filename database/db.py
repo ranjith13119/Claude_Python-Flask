@@ -56,6 +56,14 @@ def get_user_by_id(user_id):
         return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
+def get_expenses_by_user_id(user_id):
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC",
+            (user_id,),
+        ).fetchall()
+
+
 def init_db():
     with get_db() as conn:
         conn.executescript(SCHEMA)

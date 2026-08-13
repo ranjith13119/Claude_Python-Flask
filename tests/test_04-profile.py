@@ -48,13 +48,13 @@ class TestProfileContent:
         body = logged_in.get("/profile").get_data(as_text=True)
         assert "Demo User" in body
         assert DEMO_EMAIL in body
-        assert "March 2026" in body
+        assert "Member since" in body
 
     def test_shows_three_stat_cards(self, logged_in):
         body = logged_in.get("/profile").get_data(as_text=True)
-        assert "₹12,450" in body
-        assert "24" in body
-        assert "Food" in body
+        assert "₹294.64" in body
+        assert ">8<" in body
+        assert "Shopping" in body
         assert body.count("stat-card") >= 3
 
     def test_shows_transaction_table_with_columns(self, logged_in):
@@ -66,7 +66,7 @@ class TestProfileContent:
 
     def test_shows_category_breakdown_with_percents(self, logged_in):
         body = logged_in.get("/profile").get_data(as_text=True)
-        for percent in ("38%", "25%", "14%", "23%"):
+        for percent in ("26%", "27%", "20%"):
             assert percent in body
 
     def test_breakdown_percents_sum_to_100(self, logged_in):
