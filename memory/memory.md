@@ -66,3 +66,14 @@ Log of important implementation decisions and conversation outcomes.
 - Tests: `tests/test_05-backend-connection.py` — 15/15 pass. Updated `test_04-profile.py` hardcoded assertions (March 2026 → Member since, ₹12,450 → ₹294.64, 38%/25%/14%/23% → 26%/27%/20%) since Step 05 makes data live. Full suite 74/74.
 - Branch: `feature/backend-connection`. Spec: `.claude/spec/05-backend-connection.md` (+ `.opencode/spec/`). Plan: `.opencode/plans/05-backend-connection.md` (`.claude/plans/` is gitignored). Log: `Logs/05-backend-connection.md`.
 - Stashed agents/commands (test-writer/quality-reviewer/security-reviewer/test-runner, code-review command) restored from stash — committed on this branch as separate chore commit.
+
+## 2026-08-13 — Step 06 Date Filter for Profile Page (implemented + tested)
+
+- `app.py` `/profile`: `from_date`/`to_date` query params — `valid_date()` helper (strptime `%Y-%m-%d`; malformed/out-of-range ignored → treated as absent), inclusive range filter via string compare on the transactions list (new list, original untouched), params echoed back to template.
+- `templates/profile.html`: GET filter form above "Recent transactions" (two date inputs, Filter button, Reset link), Jinja `{% else %}` empty state ("No transactions in this date range." vs "No transactions yet.").
+- `static/css/style.css`: `.filter-form`/`.filter-field`/`.filter-btn`/`.filter-reset`/`.filter-empty` block — `:root` vars only, responsive at 600px.
+- Filter only affects the transactions table; stats + breakdown stay full-range.
+- Tests: `tests/test_06-date-filter-profile.py` — 18/18 (form render, from/to/both/boundary filtering, empty state, invalid dates ignored + inputs cleared, prefill, reset link, 302 guard, stats unaffected, template rules). Full suite 92/92.
+- Test gotcha: seed's oldest expense is `today-7` — a `to_date` boundary test must use `today-7`, not `today-8`.
+- Branch: `feature/date-filter-profile` (fast-forward merged from `feature/backend-connection` so 06 builds on live-data profile). Spec: `.claude/spec/06-date-filter-profile.md` (+ `.opencode/spec/`). Plan mirrored to `.opencode/plans/`. Log: `Logs/06-date-filter-profile.md`.
+- CLAUDE.md roadmap: Step 06 title updated from "Expense list" to "Date filter for profile page".
