@@ -4,7 +4,7 @@ import sqlite3
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
-from database.db import create_user, get_user_by_email, get_user_by_id, init_db, seed_db
+from database.db import create_user, get_user_by_email, get_user_by_id, get_expenses_by_user_id, init_db, seed_db
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SPENDLY_SECRET_KEY", "dev-secret-key")
@@ -81,27 +81,55 @@ def profile():
     if session.get("user_id") is None:
         return redirect(url_for("login"))
 
+    user = get_user_by_id(session["user_id"])
+    if user is None:
+        return redirect(url_for("login"))
+
+    expenses = get_expenses_by_user_id(user["id"])
+
+    total_spent = sum(e["amount"] for e in expenses)
+    transaction_count = len(expenses)
+
+    if expenses:
+        category_totals: dict[str, float] = {}
+        for e in expenses:
+            cat = e["category"]
+            category_totals[cat] = category_totals.get(cat, 0) + e["amount"]
+        top_category = max(category_totals, key=category_totals.get)
+        category_breakdown = [
+            {"category": cat, "total": f"₹{total:,.0f}", "percent": round(total / total_spent * 100)}
+            for cat, total in category_totals.items()
+        ]
+    else:
+        top_category = "-"
+        category_breakdown = []
+
+    from datetime import datetime
+    member_since = user["created_at"]
+    if member_since:
+        try:
+            dt = datetime.fromisoformat(member_since)
+            member_since = dt.strftime("%B %Y")
+        except Exception:
+            member_since = "March 2026"
+
+    transactions = [
+        {"date": e["date"], "description": e["description"], "category": e["category"], "amount": f"₹{e['amount']:.2f}"}
+        for e in expenses
+    ]
+
     return render_template(
         "profile.html",
-        name="Demo User",
-        email="demo@spendly.com",
-        member_since="March 2026",
+        name=user["name"],
+        email=user["email"],
+        member_since=member_since,
         stats={
-            "total_spent": "₹12,450",
-            "transaction_count": 24,
-            "top_category": "Food",
+            "total_spent": f"₹{total_spent:,.0f}",
+            "transaction_count": transaction_count,
+            "top_category": top_category,
         },
-        transactions=[
-            {"date": "2026-03-14", "description": "Lunch at cafe", "category": "Food", "amount": "₹320"},
-            {"date": "2026-03-12", "description": "Metro card top-up", "category": "Transport", "amount": "₹500"},
-            {"date": "2026-03-10", "description": "Electricity bill", "category": "Bills", "amount": "₹2,400"},
-        ],
-        category_breakdown=[
-            {"category": "Food", "total": "₹4,520", "percent": 38},
-            {"category": "Bills", "total": "₹3,100", "percent": 25},
-            {"category": "Transport", "total": "₹1,800", "percent": 14},
-            {"category": "Other", "total": "₹3,030", "percent": 23},
-        ],
+        transactions=transactions,
+        category_breakdown=category_breakdown,
     )
 
 
