@@ -48,6 +48,22 @@
 
             <div class="profile-card">
                 <h2 class="card-title">Recent transactions</h2>
+                <form method="GET" action="{{ url_for('profile') }}" class="filter-form">
+                    <div class="filter-fields">
+                        <label class="filter-field">
+                            <span>From</span>
+                            <input type="date" name="from_date" value="{{ from_date }}">
+                        </label>
+                        <label class="filter-field">
+                            <span>To</span>
+                            <input type="date" name="to_date" value="{{ to_date }}">
+                        </label>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-btn">Filter</button>
+                        <a href="{{ url_for('profile') }}" class="filter-reset">Reset</a>
+                    </div>
+                </form>
                 <table class="expenses-table">
                     <thead>
                         <tr>
@@ -64,6 +80,12 @@
                             <td>{{ tx["description"] }}</td>
                             <td><span class="cat-badge">{{ tx["category"] }}</span></td>
                             <td class="amount">{{ tx["amount"] }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="filter-empty">
+                                {% if from_date or to_date %}No transactions in this date range.{% else %}No transactions yet.{% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
