@@ -1,13 +1,19 @@
 ---
-description: Create a spec file and feature branch for the next Spendly step. Usage: /create-spec <step number and feature name> e.g. /create-spec 2 registration
+description: Create a spec file and feature branch for the next Spendly step
+argument-hint: "Step number and feature name e.g. 2 registration"
+allowed-tools: Read, Write, Glob, Bash(git:*)
 ---
 
-You are a senior developer spinning up a new feature for the Spendly expense tracker. Always follow the rules in AGENTS.md (and CLAUDE.md once it exists).
+You are a senior developer spinning up a new feature for the
+Spendly expense tracker. Always follow the rules in CLAUDE.md.
 
 User input: $ARGUMENTS
 
 ## Step 1 — Check working directory is clean
-Run `git status` and check for uncommitted, unstaged, or untracked files. If any exist, stop immediately and tell the user to commit or stash changes before proceeding. DO NOT CONTINUE until the working directory is clean.
+Run `git status` and check for uncommitted, unstaged, or
+untracked files. If any exist, stop immediately and tell
+the user to commit or stash changes before proceeding.
+DO NOT CONTINUE until the working directory is clean.
 
 ## Step 2 — Parse the arguments
 From $ARGUMENTS extract:
@@ -26,7 +32,8 @@ From $ARGUMENTS extract:
 4. `branch_name` — format: `feature/<feature_slug>`
    - Example: `feature/registration`
 
-If you cannot infer these from $ARGUMENTS, ask the user to clarify before proceeding.
+If you cannot infer these from $ARGUMENTS, ask the user
+to clarify before proceeding.
 
 ## Step 3 — Check branch name is not taken
 Run `git branch` to list existing branches.
@@ -48,12 +55,13 @@ git checkout -b <branch_name>
 
 ## Step 6 — Research the codebase
 Read these files before writing the spec:
-- `AGENTS.md` — conventions, gotchas (CLAUDE.md — roadmap, conventions, schema — once it exists)
+- `CLAUDE.md` — roadmap, conventions, schema
 - `app.py` — existing routes and structure
 - `database/db.py` — existing schema and functions
 - All files in `.claude/specs/` — avoid duplicating existing specs
 
-Check `CLAUDE.md` (when it exists) to confirm the requested step is not already marked complete. If it is, warn the user and stop.
+Check `CLAUDE.md` to confirm the requested step is not already
+marked complete. If it is, warn the user and stop.
 
 ## Step 7 — Write the spec
 Generate a spec document with this exact structure:
@@ -117,6 +125,7 @@ Title:     <feature_title>
 ```
 
 Then tell the user:
-"Review the spec at `.claude/specs/<step_number>-<feature_slug>.md` then enter Plan Mode with Shift+Tab twice to begin implementation."
+"Review the spec at `.claude/specs/<step_number>-<feature_slug>.md`
+then enter Plan Mode with Shift+Tab twice to begin implementation."
 
 Do not print the full spec in chat unless explicitly asked.
