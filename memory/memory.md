@@ -38,3 +38,20 @@ Log of important implementation decisions and conversation outcomes.
 - Key decision (user: "Always perform the best action"): POST-only logout (CSRF-safe), context processor for current_user (reused by Step 04 Profile), stale/invalid session user_id renders logged-out without crash or session mutation.
 - Tests: `tests/test_03-login-logout.py` — 17/17 pass (form render, redirect, session persistence, navbar states, case-insensitive email, generic errors, logout 302/405, stale session). Full suite 44/44.
 - Branch: `feature/login-logout`. Spec: `.claude/spec/03-login-logout.md` (+ `.opencode/spec/` mirror). Plans mirrored in both plans folders.
+
+## 2026-08-13 — Rollback to Step 03 (user-mandated)
+
+- User reported UI "completely distorted, no CSS applied, was good till spec 3". Root cause: the Step 05 frontend-design-skill UI refactor (new palette/typography) broke the tested look.
+- Action: rolled the repo back to the pre-Spec-04 baseline (commit `dd7dd29` tree) on branch `feature/backed-connection` as commit `f3b5849`: restored app.py/db.py/style.css/memory.md, deleted templates/profile.html, tests/test_04-profile.py, test_05-profile.py, 04-profile specs+plans (.claude/.opencode), file.md.
+- frontend-design skill is BANNED by user for this project — removed `.claude/memory/tools/frontend-design.md` and `domain/Frontend.md`.
+- IMPORTANT: the rollback commit lives on `feature/backed-connection`; main still contains Step 04 code. Feature branches for rebuilt steps must be based on `f3b5849` (or a future merge of it), NOT on main — verified when creating `feature/profile`.
+
+## 2026-08-13 — Step 04 Profile static UI (rebuilt after rollback, implemented + tested)
+
+- Rebuilt from scratch on branch `feature/profile`, based on rollback commit `f3b5849` (clean Step 03 state).
+- `app.py`: `/profile` session guard (302 → /login when logged out) + `render_template("profile.html", ...)` with hardcoded context — Demo User / demo@spendly.com / "March 2026", stats (₹12,450 / 24 / Food), 3 transactions, 4-category breakdown (38/25/14/23). No DB calls; Step 05 wires real data.
+- `templates/profile.html`: identity header with avatar initials via `{{ name.split() | map("first") | join("") | upper }}`, account card, 3 stat cards, transactions table with `.cat-badge`, breakdown with exact-value `.bar-fill.pct-{n}` progress bars. Extends base.html; zero hex, zero inline styles.
+- `static/css/style.css`: appended Profile block — `.profile-*`, `.avatar`, `.stat-card`, `.expenses-table`, `.cat-badge`, `.bar-track/.bar-fill`, `.breakdown-*`; all colors from `:root`; responsive at 600px.
+- Tests: `tests/test_04-profile.py` — 12/12 (access control 302/200, identity, stat cards, table columns, breakdown percents, navbar state, no hash leak, extends base.html, no hex/inline styles). Full suite 59/59.
+- Template-rule tests only assert `{% extends "base.html" %}` + no hex + no inline styles — url_for lives in base.html, not per-template (learned: don't assert url_for() inside child templates).
+- Spec: `.claude/spec/04-profile.md` (+ `.opencode/spec/` mirror). Plans in both plans folders; `Logs/04-profile.md` created.
