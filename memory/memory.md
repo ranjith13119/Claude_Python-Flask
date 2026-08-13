@@ -38,11 +38,3 @@ Log of important implementation decisions and conversation outcomes.
 - Key decision (user: "Always perform the best action"): POST-only logout (CSRF-safe), context processor for current_user (reused by Step 04 Profile), stale/invalid session user_id renders logged-out without crash or session mutation.
 - Tests: `tests/test_03-login-logout.py` — 17/17 pass (form render, redirect, session persistence, navbar states, case-insensitive email, generic errors, logout 302/405, stale session). Full suite 44/44.
 - Branch: `feature/login-logout`. Spec: `.claude/spec/03-login-logout.md` (+ `.opencode/spec/` mirror). Plans mirrored in both plans folders.
-## 2026-08-12 - Step 04 Profile Page (static UI, implemented + tested)
-
-- Spec was REVISED by user after initial draft: UI-first design - hardcoded data, NO DB queries this step; Step 05 "Backend connection" wires real data into these templates later.
-- pp.py: /profile replaced stub - session guard (302 to /login when logged out) + render_template with hardcoded context (name/email/member_since, stats, 3 transactions, 4-category breakdown with percents).
-- 	emplates/profile.html: 4 sections - avatar initials (Jinja first-char map), user info card, 3 stat cards, transaction table with .cat-badge, category breakdown with progress bars. No inline styles; bar widths via exact-value classes .pct-14/23/25/38.
-- static/css/style.css: appended Profile block - all :root variables, zero hex (spec rule incl. test that scans template for hex).
-- Tests: 	ests/test_04-profile.py - 11/11 (guard 302/200, 4 sections present, navbar state, no password hash, hex-free + extends-base file checks). Full suite 58/58.
-- Branch: eature/profile. Spec mirrored in .opencode/spec/. Plans in both plans folders. Pending remainder: commit/push/PR already part of ship flow.
