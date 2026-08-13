@@ -3,7 +3,7 @@ description: |-
   Writes and runs tests for a specific Spendly feature. Pass the spec name as
   argument e.g. /test-feature 05-backend-connection
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: claude-sonnet-4-6
 color: '#3B82F6'
 permission:
   bash:

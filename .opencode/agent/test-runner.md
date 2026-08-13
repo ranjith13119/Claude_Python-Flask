@@ -32,7 +32,7 @@ description: |-
   </commentary>
   </example>
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: claude-sonnet-4-6
 color: '#22C55E'
 permission:
   edit: deny

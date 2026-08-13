@@ -24,7 +24,7 @@ description: |-
   </commentary>
   </example>
 mode: subagent
-model: anthropic/claude-sonnet-4-6
+model: claude-sonnet-4-6
 color: '#EAB308'
 permission:
   bash:
