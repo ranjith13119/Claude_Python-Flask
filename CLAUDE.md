@@ -11,7 +11,7 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | 02 | Registration | `.claude/spec/02-registration.md` | ✅ Complete (tests: 12/12) |
 | 03 | Login / Logout | `.claude/spec/03-login-logout.md` | ✅ Complete (tests: 17/17) |
 | 04 | Profile | — | ⬜ Pending |
-| 05 | Backend connection | — | ⬜ Pending |
+| 05 | Backend connection | — | ⬜ Pending (spec ready, branch `feature/backend-connection`) |
 | 06 | Expense list | — | ⬜ Pending |
 | 07 | Add expense | — | ⬜ Pending |
 | 08 | Edit expense | — | ⬜ Pending |

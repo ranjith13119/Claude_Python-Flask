@@ -9,3 +9,4 @@ Entries: date | what | why
 2026-08-13 | domain/Database.md created | DB layer: get_db/init_db/seed_db, seed data, scrypt hashing, monkeypatch DB_PATH
 2026-08-13 | domain/Frontend.md created | CSS :root variables, template conventions, navbar states, no hex rule
 2026-08-13 | tools/frontend-design.md removed | skill banned by user — Steps 04–06 (profile/expenses UI refactor) rolled back to Step 03
+2026-08-13 | Step 05 backend connection implemented + tested | /profile now live: get_expenses_by_user_id(), ₹ formatting, top category Shopping for seed, pct-0..100 CSS classes, stale-session redirect; test_04 updated to real values; 74/74 suite green
