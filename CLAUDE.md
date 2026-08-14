@@ -10,10 +10,10 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | 01 | Database Setup | `.claude/spec/01-database-setup.md` | ✅ Complete (tests: 15/15) |
 | 02 | Registration | `.claude/spec/02-registration.md` | ✅ Complete (tests: 12/12) |
 | 03 | Login / Logout | `.claude/spec/03-login-logout.md` | ✅ Complete (tests: 17/17) |
-| 04 | Profile | — | ⬜ Pending |
-| 05 | Backend connection | — | ⬜ Pending (spec ready, branch `feature/backend-connection`) |
-| 06 | Date filter for profile page | — | ⬜ Pending (spec ready, branch `feature/date-filter-profile`) |
-| 07 | Add expense | — | ⬜ Pending |
+| 04 | Profile | `.claude/spec/04-profile.md` | ✅ Complete (tests: 11/11) |
+| 05 | Backend connection | `.claude/spec/05-backend-connection.md` | ✅ Complete (tests: 15/15) |
+| 06 | Date filter for profile page | `.claude/spec/06-date-filter-profile.md` | ✅ Complete (tests: 18/18) |
+| 07 | Add expense | `.claude/spec/07-add-expense.md` | ✅ Complete (tests: 24/24) |
 | 08 | Edit expense | — | ⬜ Pending |
 | 09 | Delete expense | — | ⬜ Pending |
 
