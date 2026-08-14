@@ -6,7 +6,9 @@ from werkzeug.security import generate_password_hash
 
 DB_PATH = Path(__file__).resolve().parent.parent / "expense_tracker.db"
 
-CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other", "Investment"]
+
+INVESTMENT_TYPES = ["MF", "Stocks", "Gold", "Bonds", "Crypto", "Real Estate", "Other"]
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -36,6 +38,17 @@ CREATE TABLE IF NOT EXISTS earnings (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users (id),
     UNIQUE (user_id, month)
+);
+
+CREATE TABLE IF NOT EXISTS investments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    amount REAL NOT NULL,
+    date TEXT NOT NULL,
+    note TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 """
 
@@ -118,6 +131,23 @@ def get_earnings_by_user_id(user_id):
         ).fetchall()
 
 
+def create_investment(user_id, type, amount, date, note):
+    with get_db() as conn:
+        cur = conn.execute(
+            "INSERT INTO investments (user_id, type, amount, date, note) VALUES (?, ?, ?, ?, ?)",
+            (user_id, type, amount, date, note),
+        )
+        return cur.lastrowid
+
+
+def get_investments_by_user_id(user_id):
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM investments WHERE user_id = ? ORDER BY date DESC",
+            (user_id,),
+        ).fetchall()
+
+
 def init_db():
     with get_db() as conn:
         conn.executescript(SCHEMA)
@@ -145,6 +175,7 @@ def seed_db():
             ("Cinema tickets", "Entertainment", 22.00, 5),
             ("New sneakers", "Shopping", 79.99, 6),
             ("Miscellaneous", "Other", 12.30, 7),
+            ("Gold coin", "Investment", 50.00, 8),
         ]
 
         conn.executemany(

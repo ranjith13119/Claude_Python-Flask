@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 
 from database import db
 
-EXPECTED_CATEGORIES = {"Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"}
+EXPECTED_CATEGORIES = {"Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other", "Investment"}
 
 
 @pytest.fixture(autouse=True)
@@ -79,7 +79,7 @@ class TestSeedData:
         assert check_password_hash(user["password_hash"], "demo123")
 
     def test_eight_expenses_exist(self):
-        assert get_expense_count() == 8
+        assert get_expense_count() == 9
 
     def test_all_categories_covered(self):
         with db.get_db() as conn:
@@ -111,7 +111,7 @@ class TestSeedData:
     def test_seed_is_idempotent(self):
         db.seed_db()
         assert get_user_count() == 1
-        assert get_expense_count() == 8
+        assert get_expense_count() == 9
 
 
 class TestConstraints:

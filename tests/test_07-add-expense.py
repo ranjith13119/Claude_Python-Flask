@@ -8,7 +8,7 @@ from database import db
 DEMO_EMAIL = "demo@spendly.com"
 DEMO_PASSWORD = "demo123"
 ADD_TEMPLATE = "templates/add_expense.html"
-EXPECTED_CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+EXPECTED_CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other", "Investment"]
 
 
 @pytest.fixture(autouse=True)
@@ -74,7 +74,7 @@ class TestAddExpensePage:
         body = client.get("/expenses/add").get_data(as_text=True)
         assert 'name="amount"' in body
 
-    def test_page_shows_all_seven_categories(self, client):
+    def test_page_shows_all_eight_categories(self, client):
         login(client)
         body = client.get("/expenses/add").get_data(as_text=True)
         for category in EXPECTED_CATEGORIES:

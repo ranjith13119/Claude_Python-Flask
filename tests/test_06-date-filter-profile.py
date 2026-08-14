@@ -128,8 +128,8 @@ class TestAccessAndRules:
 
     def test_stats_unaffected_by_filter(self, logged_in):
         body = logged_in.get(f"/profile?from_date={TODAY}").get_data(as_text=True)
-        assert "₹294.64" in body
-        assert "8" in body
+        assert "₹344.64" in body
+        assert "9" in body
 
     def test_no_hex_colors_in_template(self):
         with open("templates/profile.html", encoding="utf-8") as f:
