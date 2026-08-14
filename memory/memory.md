@@ -39,6 +39,7 @@ Log of important implementation decisions and conversation outcomes.
 - Tests: `tests/test_03-login-logout.py` — 17/17 pass (form render, redirect, session persistence, navbar states, case-insensitive email, generic errors, logout 302/405, stale session). Full suite 44/44.
 - Branch: `feature/login-logout`. Spec: `.claude/spec/03-login-logout.md` (+ `.opencode/spec/` mirror). Plans mirrored in both plans folders.
 
+
 ## 2026-08-13 — Rollback to Step 03 (user-mandated)
 
 - User reported UI "completely distorted, no CSS applied, was good till spec 3". Root cause: the Step 05 frontend-design-skill UI refactor (new palette/typography) broke the tested look.
@@ -77,3 +78,14 @@ Log of important implementation decisions and conversation outcomes.
 - Test gotcha: seed's oldest expense is `today-7` — a `to_date` boundary test must use `today-7`, not `today-8`.
 - Branch: `feature/date-filter-profile` (fast-forward merged from `feature/backend-connection` so 06 builds on live-data profile). Spec: `.claude/spec/06-date-filter-profile.md` (+ `.opencode/spec/`). Plan mirrored to `.opencode/plans/`. Log: `Logs/06-date-filter-profile.md`.
 - CLAUDE.md roadmap: Step 06 title updated from "Expense list" to "Date filter for profile page".
+
+## 2026-08-13 - Step 07 Add Expense (implemented + tested)
+
+- Built on main (Steps 01-04). NOTE: Steps 05/06 (backend connection, date filter) live on unmerged branch feature/date-filter-profile - this branch does NOT include them.
+- database/db.py: added create_expense(user_id, amount, category, date, description) - parameterised INSERT, returns lastrowid; no schema change.
+- app.py: /expenses/add now GET+POST; auth guard (302 /login), validation order: amount (float > 0) then category in CATEGORIES (imported, no dup list) then date (date.fromisoformat strict, not future); first error re-renders with error, inserts nothing; success 302 landing (PRG). Description empty -> NULL.
+- templates/add_expense.html: reuses auth-section/auth-card/form-group/form-input/btn-submit classes; category dropdown loops CATEGORIES; date defaults to today via today=date.today().isoformat(). Zero hex/inline styles.
+- style.css: added .form-select (matches .form-input via :root vars) + .form-optional.
+- Tests: tests/test_07-add-expense.py - 24/24 (access control GET/POST 302, form render + 7 categories + today default, valid insert w/ correct user_id + NULL description, 9 invalid variants -> 200 error + no insert, template rules). Full suite 82/82. First-run green.
+- Spec: .claude/spec/07-add-expense.md; plan mirrored at .opencode/plans/07-add-expense.md (.claude/plans/ is gitignored); Log: Logs/07-add-expense.md. Branch: feature/add-expense.
+- Decision: no nav link to the add form yet - Step 08/09 will add nav once list/edit exist. Amount stored as REAL.

@@ -64,6 +64,15 @@ def get_expenses_by_user_id(user_id):
         ).fetchall()
 
 
+def create_expense(user_id, amount, category, date, description):
+    with get_db() as conn:
+        cur = conn.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) VALUES (?, ?, ?, ?, ?)",
+            (user_id, amount, category, date, description),
+        )
+        return cur.lastrowid
+
+
 def init_db():
     with get_db() as conn:
         conn.executescript(SCHEMA)

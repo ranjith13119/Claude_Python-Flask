@@ -1,12 +1,13 @@
 import os
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
 from database.db import (
     CATEGORIES,
+    create_expense,
     create_user,
     get_expenses_by_user_id,
     get_user_by_email,
@@ -195,9 +196,47 @@ def profile():
     )
 
 
-@app.route("/expenses/add")
+@app.route("/expenses/add", methods=["GET", "POST"])
 def add_expense():
-    return "Add expense — coming in Step 7"
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date_raw = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip() or None
+
+        error = None
+        try:
+            amount = float(amount_raw)
+            if amount <= 0:
+                error = "Amount must be greater than zero"
+        except ValueError:
+            error = "Amount must be a valid number"
+
+        if error is None and category not in CATEGORIES:
+            error = "Please choose a valid category"
+
+        if error is None:
+            try:
+                expense_date = date.fromisoformat(date_raw)
+                if expense_date > date.today():
+                    error = "Date cannot be in the future"
+            except ValueError:
+                error = "Date must be a valid date (YYYY-MM-DD)"
+
+        if error is not None:
+            return render_template(
+                "add_expense.html", error=error, categories=CATEGORIES, today=date.today().isoformat()
+            )
+
+        create_expense(session["user_id"], amount, category, date_raw, description)
+        return redirect(url_for("landing"))
+
+    return render_template(
+        "add_expense.html", categories=CATEGORIES, today=date.today().isoformat()
+    )
 
 
 @app.route("/expenses/<int:id>/edit")
