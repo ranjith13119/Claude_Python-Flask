@@ -1,31 +1,35 @@
-# Spec: Profile Page
+# Spec: Profile
 
 ## Overview
 
-Logged-in users can view their own account page showing the full name, email address, and account creation date they registered with. Visiting `/profile` while logged out redirects to the login page, and every logged-in user only ever sees their own data. This is the first "logged-in only" page in Spendly, so it establishes the access-control pattern every protected route from Step 05 onward will reuse, and it gives the "My profile" button added to the landing hero in Step 03 a real destination.
+Logged-in users can view a personal Profile page that shows who they are (name, email, member since) plus a read-only snapshot of their spending: three stat cards (total spent, transaction count, top category), a recent-transactions table, and a category breakdown with progress bars. This step is deliberately UI-first: the page renders hardcoded demo data so the layout and styling can be reviewed before real data is wired in. Step 05 ("Backend connection") will replace the hardcoded context with real queries against the `expenses` table; nothing in this step touches the database beyond what already exists.
 
 ## Depends on
 
-- Step 01 — Database setup (`users` table with `name`, `email`, `created_at`)
-- Step 02 — Registration (users get created with a name and email)
-- Step 03 — Login / Logout (`session["user_id"]`, `get_user_by_id()`, `current_user` context processor)
+- Step 01 — Database setup (`users` / `expenses` tables exist)
+- Step 03 — Login / Logout (`session["user_id"]` and the `current_user` context processor)
 
 ## Routes
 
-- `GET /profile` — render the logged-in user's profile page; redirect to `GET /login` when not logged in — logged-in
+- `GET /profile` — render the profile page — logged-in only (302 to `/login` when there is no session)
 
 ## Database changes
 
-No database changes — the `users` table already stores everything needed (`name`, `email`, `created_at`). No new columns, tables, or constraints.
+No schema changes and no new queries. The route receives all context from hardcoded Python data in `app.py` (Step 05 replaces it with DB calls).
 
 ## Templates
 
-- **Create:** `templates/profile.html` — a section with the user's full name (heading), email, and joined date (formatted from `created_at`), plus a card-styled profile summary and a sign-out link/button reusing existing classes (`auth-*` not required; use a simple card layout consistent with the site with variables-only CSS)
-- **Modify:** none
+- **Create:** `templates/profile.html` — extends `base.html`; four sections:
+  - Avatar initials block (derive initials from the first letters of the name) + name + email + member-since line
+  - User info card (email, member since)
+  - Three stat cards: total spent, transaction count, top category
+  - Recent transactions table with rows of date / description / category / amount and a category badge
+  - Category breakdown with progress bars showing percentage per category
+- **Modify:** none — the navbar already renders the logged-in state via `current_user` from Step 03
 
 ## Files to change
 
-- `app.py` — replace the `/profile` placeholder with a real route: if no `session["user_id"]`, `redirect(url_for("login"))`; otherwise render `profile.html` with the current user row; the `current_user` context processor from Step 03 already supplies the data
+- `app.py` — replace the `/profile` placeholder ("Profile page — coming in Step 4") with a session-guarded route that renders `profile.html` with hardcoded context (name, email, member_since, stats dict, transactions list, category_breakdown list with percents)
 
 ## Files to create
 
@@ -38,22 +42,25 @@ No new dependencies.
 
 ## Rules for implementation
 
-- No SQLAlchemy or ORMs — parameterized queries only, never string formatting in SQL
-- Access control: check `session["user_id"]` in the route; logged-out visitors get a 302 redirect to `/login` before any rendering
-- Always render the data of the logged-in user only — never a user id from the URL or query string
-- `created_at` is stored as UTC SQLite `datetime('now')`; display it as a readable human date (e.g. "Joined Aug 2026") — parse defensively, never crash on a malformed value
-- Do not expose `password_hash` or internal ids in the template
-- Use CSS variables from `:root` in `static/css/style.css` — never hardcode hex colors; reuse existing card/typography classes where they fit, add only needed rules with variables
+- No SQLAlchemy or ORMs — parameterized queries only (no new queries this step, but keep the rule for anything touched)
+- Passwords hashed with werkzeug — never render or expose any hash in the template
+- Session guard first: `if session.get("user_id") is None: return redirect(url_for("login"))`
+- No inline styles or hardcoded hex colors in the template — all colors from CSS variables in `:root` in `static/css/style.css`; use the existing look first, extend `:root` variables for new elements if needed (no UI redesign, no new design system)
+- Bar widths in the category breakdown via exact percentage classes (e.g. `.pct-38`) — never arbitrary inline `width:` values
+- Amounts formatted as strings with the rupee symbol (e.g. "₹12,450") in the hardcoded context — no currency logic in the template
 - All templates extend `base.html`; use `url_for()` for routes and static assets
-- The navbar "My profile" link (landing hero, Step 03) must keep working unchanged
+- Do not add any new product-wide design language: reuse the current page layouts, typography, and spacing from the existing landing/register/login pages
+- Category names must match the fixed list: Food, Transport, Bills, Health, Entertainment, Shopping, Other
 
 ## Definition of done
 
-- [ ] GET /profile while logged out redirects (302) to /login
-- [ ] Logging in as demo@spendly.com / demo123 and visiting /profile shows "Demo User"
-- [ ] The profile page shows the account's email address
-- [ ] The profile page shows a readable joined/created date formatted from `created_at`
-- [ ] A registered second user sees only their own name/email on /profile, never Demo User's
-- [ ] The profile page never displays the password hash
-- [ ] The landing "My profile" link navigates to the profile page for logged-in users
+- [ ] GET /profile while logged out responds 302 and redirects to /login
+- [ ] GET /profile while logged in responds 200 and renders four sections: avatar/identity, user info card, three stat cards, transactions table, category breakdown with progress bars
+- [ ] The page shows the demo user's name, email, and a member-since value
+- [ ] The three stat cards show total spent, transaction count, and top category
+- [ ] The transactions table has rows with date, description, category, and amount columns
+- [ ] The category breakdown shows percentages that sum to 100
+- [ ] The navbar on /profile shows the logged-in state (email + Log out), not Sign in / Get started
+- [ ] No password hash or password-related value appears anywhere on the page
+- [ ] `templates/profile.html` extends `base.html` via `url_for()`, uses no hex colors, and has no inline styles
 - [ ] `python -m pytest tests/test_04-profile.py -v` passes

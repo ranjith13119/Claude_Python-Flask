@@ -28,10 +28,42 @@ Spendly: a Flask expense tracker built incrementally as a teaching project ("Ste
 - Git: never commit directly to main; work on `feature/<slug>` branches with Conventional Commit messages; squash-merge PRs, then delete branches.
 - `.claude/commands/` defines a spec-driven workflow (`create-spec`, `test-feature`, `ship-feature`) that references `CLAUDE.md` and `.claude/specs/` — **neither exists yet**; they are expected to be created as the project progresses. Test files follow `tests/test_<step>-<slug>.py` naming. Same commands are ported to opencode at `.opencode/command/` (same spec storage in `.claude/specs/`); keep the two in sync.
 
-## Memory 
+
+## Memory Management 
+
+Maintain a structured memory system rooted at .claude/memory/ 
+
+### Structure 
+
+- memory.md — index of all memory files, updated whenever you create or modify one 
+- general.md — cross-project facts, preferences, environment setup 
+- domain/{topic}.md — domain-specific knowledge (one file per topic) 
+- tools/{tool}.md — tool configs, CLI patterns, workarounds  
+
+### Rules 
+
+1. When you learn something worth remembering, write it to the right file immediately 
+2. Keep memory.md as a current index with one-line descriptions
+3. Entries: date, what, why — nothing more 
+4. Read memory.md at session start. Load other files only when relevant
+5. If a file doesn't exist yet, create it  
+
+### Maintenance 
+
+When I say "reorganize memory": 
+1. Read all memory files 
+2. Remove duplicates and outdated entries 
+3. Merge entries that belong together 
+4. Split files that cover too many topics 
+5. Re-sort entries by date within each file
+6. Update memory.md index 
+7. Show me a summary of what changed
+
 
 - Store our important conversation in the local memory 'memory.md' in the memory folder 
 - Store all the created specification in the specs folder 
 - Always create an detailed implementation plan for each spec and store it in plans folder
 - Strictly don't push any sensitive information to LLM, GIT, etc., 
 - Create a Log file under Logs folder for each feature 
+
+
