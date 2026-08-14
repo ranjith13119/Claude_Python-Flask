@@ -949,3 +949,106 @@ a { color: inherit; text-decoration: none; }
     .filter-form { flex-direction: column; align-items: stretch; }
     .filter-actions { justify-content: flex-start; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Table actions + earnings (Steps 08-10)                              */
+/* ------------------------------------------------------------------ */
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.btn-sm {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    color: var(--ink-soft);
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-danger-sm { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
+.btn-danger-sm:hover { background: var(--danger); color: var(--paper); border-color: var(--danger); }
+
+.inline-form { display: inline-flex; margin: 0; }
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.earnings-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.earnings-form .filter-field { flex: 1 1 160px; }
+
+.earnings-form .filter-field span {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin-bottom: 0.4rem;
+}
+
+.earnings-form .form-input,
+.earnings-form input[type="month"] {
+    width: 100%;
+    padding: 0.6rem 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.earnings-form input:focus { border-color: var(--accent); }
+
+.earnings-save { flex: 0 0 auto; width: auto; padding: 0.6rem 1.5rem; margin-top: 0; }
+
+.earnings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.earnings-table th,
+.earnings-table td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.earnings-table th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+}
+
+.net-value { font-weight: 600; }
+.net-positive { color: var(--accent); }
+.net-negative { color: var(--danger); }

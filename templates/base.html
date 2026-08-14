@@ -21,6 +21,7 @@
             <div class="nav-links">
                 {% if current_user %}
                 <span class="nav-user">{{ current_user["email"] }}</span>
+                <a href="{{ url_for('add_expense') }}" class="nav-link">Add expense</a>
                 <form method="POST" action="{{ url_for('logout') }}" class="nav-logout">
                     <button type="submit" class="nav-cta">Log out</button>
                 </form>
