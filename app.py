@@ -23,6 +23,15 @@ app.secret_key = os.environ.get("SPENDLY_SECRET_KEY", "dev-secret-key")
 # Helpers                                                             #
 # ------------------------------------------------------------------ #
 
+def valid_date(value):
+    try:
+        if value:
+            datetime.strptime(value, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
+
+
 def format_rupee(amount):
     return f"₹{amount:,.2f}"
 
@@ -147,6 +156,21 @@ def profile():
         for expense in expenses
     ]
 
+    from_date = request.args.get("from_date", "")
+    to_date = request.args.get("to_date", "")
+
+    if not valid_date(from_date):
+        from_date = ""
+    if not valid_date(to_date):
+        to_date = ""
+
+    filtered_transactions = [
+        tx
+        for tx in transactions
+        if (not from_date or tx["date"] >= from_date)
+        and (not to_date or tx["date"] <= to_date)
+    ]
+
     member_since = user["created_at"][:7]
     if len(member_since) == 7:
         try:
@@ -164,7 +188,9 @@ def profile():
             "transaction_count": transaction_count,
             "top_category": top_category,
         },
-        transactions=transactions,
+        transactions=filtered_transactions,
+        from_date=from_date,
+        to_date=to_date,
         category_breakdown=build_category_breakdown(expenses),
     )
 

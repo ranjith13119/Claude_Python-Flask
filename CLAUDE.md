@@ -12,7 +12,7 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | 03 | Login / Logout | `.claude/spec/03-login-logout.md` | ✅ Complete (tests: 17/17) |
 | 04 | Profile | — | ⬜ Pending |
 | 05 | Backend connection | — | ⬜ Pending (spec ready, branch `feature/backend-connection`) |
-| 06 | Expense list | — | ⬜ Pending |
+| 06 | Date filter for profile page | — | ⬜ Pending (spec ready, branch `feature/date-filter-profile`) |
 | 07 | Add expense | — | ⬜ Pending |
 | 08 | Edit expense | — | ⬜ Pending |
 | 09 | Delete expense | — | ⬜ Pending |
