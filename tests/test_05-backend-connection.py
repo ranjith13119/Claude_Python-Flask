@@ -60,7 +60,7 @@ class TestLiveData:
     def test_stats_computed_from_expenses(self, client):
         login(client)
         body = client.get("/profile").get_data(as_text=True)
-        assert "₹294.64" in body
+        assert "₹344.64" in body
         assert "8" in body
         assert "Shopping" in body
 
@@ -87,8 +87,8 @@ class TestLiveData:
         body = client.get("/profile").get_data(as_text=True)
         for category in ("Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"):
             assert category in body
-        assert "pct-26" in body
-        assert "pct-27" in body
+        assert "pct-22" in body
+        assert "pct-23" in body
 
     def test_member_since_derived_from_created_at(self, client):
         login(client)

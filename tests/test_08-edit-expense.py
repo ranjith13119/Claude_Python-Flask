@@ -8,7 +8,7 @@ from database import db
 DEMO_EMAIL = "demo@spendly.com"
 DEMO_PASSWORD = "demo123"
 EDIT_TEMPLATE = "templates/edit_expense.html"
-EXPECTED_CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+EXPECTED_CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other", "Investment"]
 
 
 @pytest.fixture(autouse=True)
@@ -92,7 +92,7 @@ class TestEditPage:
         body = client.get("/expenses/1/edit").get_data(as_text=True)
         assert '<option value="Food" selected>' in body
 
-    def test_all_seven_categories_present(self, client):
+    def test_all_eight_categories_present(self, client):
         login(client)
         body = client.get("/expenses/1/edit").get_data(as_text=True)
         for category in EXPECTED_CATEGORIES:

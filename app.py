@@ -9,12 +9,15 @@ from werkzeug.security import check_password_hash
 
 from database.db import (
     CATEGORIES,
+    INVESTMENT_TYPES,
     create_expense,
+    create_investment,
     create_user,
     delete_expense,
     get_earnings_by_user_id,
     get_expense_by_id,
     get_expenses_by_user_id,
+    get_investments_by_user_id,
     get_user_by_email,
     get_user_by_id,
     init_db,
@@ -67,16 +70,20 @@ def build_category_breakdown(expenses):
     return breakdown
 
 
-def validate_expense_input(amount_raw, category, date_raw):
-    error = None
+def parse_amount(amount_raw):
     try:
         amount = float(amount_raw)
         if not math.isfinite(amount):
-            error = "Amount must be a valid number"
-        elif amount <= 0:
-            error = "Amount must be greater than zero"
+            return None, "Amount must be a valid number"
+        if amount <= 0:
+            return None, "Amount must be greater than zero"
+        return amount, None
     except ValueError:
-        error = "Amount must be a valid number"
+        return None, "Amount must be a valid number"
+
+
+def validate_expense_input(amount_raw, category, date_raw):
+    amount, error = parse_amount(amount_raw)
 
     if error is None and category not in CATEGORIES:
         error = "Please choose a valid category"
@@ -89,7 +96,24 @@ def validate_expense_input(amount_raw, category, date_raw):
         except ValueError:
             error = "Date must be a valid date (YYYY-MM-DD)"
 
-    return amount if error is None else None, error
+    return amount, error
+
+
+def validate_investment_input(amount_raw, type_raw, date_raw):
+    amount, error = parse_amount(amount_raw)
+
+    if error is None and type_raw not in INVESTMENT_TYPES:
+        error = "Please choose a valid investment type"
+
+    if error is None:
+        try:
+            investment_date = date.fromisoformat(date_raw)
+            if investment_date > date.today():
+                error = "Date cannot be in the future"
+        except ValueError:
+            error = "Date must be a valid date (YYYY-MM-DD)"
+
+    return amount, error
 
 
 # ------------------------------------------------------------------ #
@@ -158,31 +182,61 @@ def logout():
     return redirect(url_for("landing"))
 
 
-def build_monthly_comparison(expenses, earnings_rows):
+def build_monthly_comparison(expenses, earnings_rows, investments):
     spent_by_month = {}
     for expense in expenses:
         month = expense["date"][:7]
         spent_by_month[month] = spent_by_month.get(month, 0.0) + expense["amount"]
 
     earnings_by_month = {row["month"]: row["amount"] for row in earnings_rows}
-    months = sorted(set(spent_by_month) | set(earnings_by_month), reverse=True)
+    invested_by_month = {}
+    for investment in investments:
+        month = investment["date"][:7]
+        invested_by_month[month] = invested_by_month.get(month, 0.0) + investment["amount"]
+
+    months = sorted(set(spent_by_month) | set(earnings_by_month) | set(invested_by_month), reverse=True)
 
     comparison = []
     for month in months:
         earnings_amount = earnings_by_month.get(month)
         spent = spent_by_month.get(month)
+        invested = invested_by_month.get(month)
         comparison.append(
             {
                 "month": month,
                 "earnings": earnings_amount,
                 "spent": spent,
+                "invested": invested,
                 "net": earnings_amount - spent if earnings_amount is not None and spent is not None else None,
             }
         )
     return comparison
 
 
-def render_profile(error=None):
+def build_investment_breakdown(investments):
+    totals = {}
+    for investment in investments:
+        totals[investment["type"]] = totals.get(investment["type"], 0.0) + investment["amount"]
+
+    grand_total = sum(totals.values())
+    if grand_total <= 0:
+        return []
+
+    breakdown = []
+    for type in INVESTMENT_TYPES:
+        if type not in totals:
+            continue
+        breakdown.append(
+            {
+                "type": type,
+                "total": format_rupee(totals[type]),
+                "percent": round(totals[type] / grand_total * 100),
+            }
+        )
+    return breakdown
+
+
+def render_profile(earnings_error=None, investment_error=None):
     if session.get("user_id") is None:
         return redirect(url_for("login"))
 
@@ -191,6 +245,7 @@ def render_profile(error=None):
         return redirect(url_for("login"))
 
     expenses = get_expenses_by_user_id(user["id"])
+    investments = get_investments_by_user_id(user["id"])
 
     total_spent = sum(expense["amount"] for expense in expenses)
     transaction_count = len(expenses)
@@ -235,6 +290,8 @@ def render_profile(error=None):
         except ValueError:
             pass
 
+    total_invested = sum(investment["amount"] for investment in investments)
+
     return render_template(
         "profile.html",
         name=user["name"],
@@ -244,14 +301,19 @@ def render_profile(error=None):
             "total_spent": format_rupee(total_spent),
             "transaction_count": transaction_count,
             "top_category": top_category,
+            "total_invested": format_rupee(total_invested),
         },
         transactions=filtered_transactions,
         from_date=from_date,
         to_date=to_date,
         category_breakdown=build_category_breakdown(expenses),
-        monthly_comparison=build_monthly_comparison(expenses, get_earnings_by_user_id(user["id"])),
+        monthly_comparison=build_monthly_comparison(expenses, get_earnings_by_user_id(user["id"]), investments),
         current_month=date.today().strftime("%Y-%m"),
-        earnings_error=error,
+        earnings_error=earnings_error,
+        investment_error=investment_error,
+        investments=investments,
+        investment_types=INVESTMENT_TYPES,
+        investment_breakdown=build_investment_breakdown(investments),
     )
 
 
@@ -345,19 +407,31 @@ def earnings():
             error = "Month must be a valid month (YYYY-MM)"
 
     if error is None:
-        try:
-            amount = float(amount_raw)
-            if not math.isfinite(amount):
-                error = "Amount must be a valid number"
-            elif amount <= 0:
-                error = "Amount must be greater than zero"
-        except ValueError:
-            error = "Amount must be a valid number"
+        amount, error = parse_amount(amount_raw)
 
     if error is not None:
-        return render_profile(error=error)
+        return render_profile(earnings_error=error)
 
     upsert_earnings(session["user_id"], month, amount)
+    return redirect(url_for("profile"))
+
+
+@app.route("/investments", methods=["POST"])
+def investments():
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    type_raw = request.form.get("type", "").strip()
+    amount_raw = request.form.get("amount", "").strip()
+    date_raw = request.form.get("date", "").strip()
+    note = request.form.get("note", "").strip() or None
+
+    amount, error = validate_investment_input(amount_raw, type_raw, date_raw)
+
+    if error is not None:
+        return render_profile(investment_error=error)
+
+    create_investment(session["user_id"], type_raw, amount, date_raw, note)
     return redirect(url_for("profile"))
 
 

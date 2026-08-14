@@ -1,6 +1,6 @@
 # CLAUDE.md — Spendly (Claude Code companion to AGENTS.md)
 
-Spendly: a Flask expense tracker built incrementally as a teaching project ("Steps 1–10").
+Spendly: a Flask expense tracker built incrementally as a teaching project ("Steps 1–11").
 This file is the roadmap + conventions reference that the `.claude/commands/` workflow depends on.
 
 ## Roadmap & Status
@@ -17,6 +17,7 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | 08 | Edit expense | `.claude/spec/08-edit-expense.md` | ✅ Complete (tests: 23/23) |
 | 09 | Delete expense | `.claude/spec/09-delete-expense.md` | ✅ Complete (tests: 10/10) |
 | 10 | Monthly earnings | `.claude/spec/10-monthly-earnings.md` | ✅ Complete (tests: 19/19) |
+| 11 | Investment tracking | `.claude/spec/11-investments.md` | ✅ Complete (tests: 27/27) |
 
 Specs live in `.claude/spec/` (mirrored in `.opencode/spec/`). Do not start a feature before its spec exists and is reviewed.
 
@@ -28,7 +29,8 @@ Specs live in `.claude/spec/` (mirrored in `.opencode/spec/`). Do not start a fe
 - Amounts stored as REAL. Dates strict `YYYY-MM-DD`.
 - CSS: use variables from `:root` in `static/css/style.css` — never hardcode hex colors.
 - All templates extend `templates/base.html`; use `url_for()` for routes/static assets.
-- Fixed expense categories: Food, Transport, Bills, Health, Entertainment, Shopping, Other (see `database/db.py::CATEGORIES`).
+- Fixed expense categories: Food, Transport, Bills, Health, Entertainment, Shopping, Other, Investment (see `database/db.py::CATEGORIES`).
+- Fixed investment types: MF, Stocks, Gold, Bonds, Crypto, Real Estate, Other (see `database/db.py::INVESTMENT_TYPES`).
 - Git: never commit directly to main; `feature/<slug>` branches, Conventional Commits, squash-merge, delete branches after merge.
 
 ## Testing (mandatory)
@@ -44,6 +46,8 @@ Specs live in `.claude/spec/` (mirrored in `.opencode/spec/`). Do not start a fe
 **expenses** — id INTEGER PK · user_id INTEGER NOT NULL FK→users.id · amount REAL NOT NULL · category TEXT NOT NULL · date TEXT NOT NULL (YYYY-MM-DD) · description TEXT nullable · created_at TEXT DEFAULT datetime('now')
 
 **earnings** — id INTEGER PK · user_id INTEGER NOT NULL FK→users.id · month TEXT NOT NULL (YYYY-MM) · amount REAL NOT NULL · created_at TEXT DEFAULT datetime('now') · UNIQUE(user_id, month)
+
+**investments** — id INTEGER PK · user_id INTEGER NOT NULL FK→users.id · type TEXT NOT NULL (INVESTMENT_TYPES) · amount REAL NOT NULL · date TEXT NOT NULL (YYYY-MM-DD) · note TEXT nullable · created_at TEXT DEFAULT datetime('now')
 
 ## Run
 

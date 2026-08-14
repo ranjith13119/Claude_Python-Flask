@@ -44,6 +44,10 @@
                     <span class="stat-label">Top category</span>
                     <span class="stat-value">{{ stats["top_category"] }}</span>
                 </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total invested</span>
+                    <span class="stat-value">{{ stats["total_invested"] }}</span>
+                </div>
             </div>
 
             <div class="profile-card">
@@ -140,6 +144,7 @@
                             <th>Month</th>
                             <th>Earnings</th>
                             <th>Spent</th>
+                            <th>Invested</th>
                             <th>Net</th>
                         </tr>
                     </thead>
@@ -149,6 +154,7 @@
                             <td>{{ row["month"] }}</td>
                             <td>{{ "₹{:,.2f}".format(row["earnings"]) if row["earnings"] is not none else "—" }}</td>
                             <td>{{ "₹{:,.2f}".format(row["spent"]) if row["spent"] is not none else "—" }}</td>
+                            <td>{{ "₹{:,.2f}".format(row["invested"]) if row["invested"] is not none else "—" }}</td>
                             <td>
                                 {% if row["net"] is not none %}
                                 <span class="net-value {% if row['net'] >= 0 %}net-positive{% else %}net-negative{% endif %}">
@@ -161,11 +167,80 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" class="filter-empty">No earnings or expenses recorded yet.</td>
+                            <td colspan="5" class="filter-empty">No earnings or expenses recorded yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="profile-card">
+                <h2 class="card-title">Investments</h2>
+                {% if investment_error %}
+                <div class="auth-error">{{ investment_error }}</div>
+                {% endif %}
+                <form method="POST" action="{{ url_for('investments') }}" class="invest-form">
+                    <label class="filter-field">
+                        <span>Type</span>
+                        <select name="type" class="form-select" required>
+                            {% for type in investment_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="filter-field">
+                        <span>Amount (₹)</span>
+                        <input type="number" name="amount" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
+                    </label>
+                    <label class="filter-field">
+                        <span>Date</span>
+                        <input type="date" name="date" value="{{ current_month }}-01" required>
+                    </label>
+                    <label class="filter-field">
+                        <span>Note</span>
+                        <input type="text" name="note" class="form-input" placeholder="e.g. HDFC Midcap, SBI Gold">
+                    </label>
+                    <button type="submit" class="btn-submit invest-save">Add investment</button>
+                </form>
+                <table class="invest-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for investment in investments %}
+                        <tr>
+                            <td>{{ investment["date"] }}</td>
+                            <td><span class="cat-badge">{{ investment["type"] }}</span></td>
+                            <td class="amount">{{ "₹{:,.2f}".format(investment["amount"]) }}</td>
+                            <td>{{ investment["note"] or "—" }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="filter-empty">No investments yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <h3 class="card-subtitle">Investments by type</h3>
+                <div class="breakdown-list">
+                    {% for item in investment_breakdown %}
+                    <div class="breakdown-row">
+                        <span class="breakdown-cat">{{ item["type"] }}</span>
+                        <div class="bar-track">
+                            <div class="bar-fill pct-{{ item['percent'] }}" aria-label="{{ item['percent'] }}%"></div>
+                        </div>
+                        <span class="breakdown-pct">{{ item["percent"] }}%</span>
+                        <span class="breakdown-total">{{ item["total"] }}</span>
+                    </div>
+                    {% else %}
+                    <p class="filter-empty">No investments yet.</p>
+                    {% endfor %}
+                </div>
             </div>
 
         </div>
