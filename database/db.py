@@ -27,6 +27,16 @@ CREATE TABLE IF NOT EXISTS expenses (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+CREATE TABLE IF NOT EXISTS earnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    month TEXT NOT NULL,
+    amount REAL NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    UNIQUE (user_id, month)
+);
 """
 
 
@@ -71,6 +81,41 @@ def create_expense(user_id, amount, category, date, description):
             (user_id, amount, category, date, description),
         )
         return cur.lastrowid
+
+
+def get_expense_by_id(expense_id):
+    with get_db() as conn:
+        return conn.execute("SELECT * FROM expenses WHERE id = ?", (expense_id,)).fetchone()
+
+
+def update_expense(expense_id, amount, category, date, description):
+    with get_db() as conn:
+        conn.execute(
+            "UPDATE expenses SET amount = ?, category = ?, date = ?, description = ? WHERE id = ?",
+            (amount, category, date, description, expense_id),
+        )
+
+
+def delete_expense(expense_id):
+    with get_db() as conn:
+        conn.execute("DELETE FROM expenses WHERE id = ?", (expense_id,))
+
+
+def upsert_earnings(user_id, month, amount):
+    with get_db() as conn:
+        conn.execute(
+            "INSERT INTO earnings (user_id, month, amount) VALUES (?, ?, ?) "
+            "ON CONFLICT(user_id, month) DO UPDATE SET amount = excluded.amount",
+            (user_id, month, amount),
+        )
+
+
+def get_earnings_by_user_id(user_id):
+    with get_db() as conn:
+        return conn.execute(
+            "SELECT * FROM earnings WHERE user_id = ? ORDER BY month DESC",
+            (user_id,),
+        ).fetchall()
 
 
 def init_db():

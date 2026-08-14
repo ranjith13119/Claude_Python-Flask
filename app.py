@@ -1,4 +1,6 @@
+import math
 import os
+import re
 import sqlite3
 from datetime import date, datetime
 
@@ -9,11 +11,16 @@ from database.db import (
     CATEGORIES,
     create_expense,
     create_user,
+    delete_expense,
+    get_earnings_by_user_id,
+    get_expense_by_id,
     get_expenses_by_user_id,
     get_user_by_email,
     get_user_by_id,
     init_db,
     seed_db,
+    update_expense,
+    upsert_earnings,
 )
 
 app = Flask(__name__)
@@ -58,6 +65,31 @@ def build_category_breakdown(expenses):
             }
         )
     return breakdown
+
+
+def validate_expense_input(amount_raw, category, date_raw):
+    error = None
+    try:
+        amount = float(amount_raw)
+        if not math.isfinite(amount):
+            error = "Amount must be a valid number"
+        elif amount <= 0:
+            error = "Amount must be greater than zero"
+    except ValueError:
+        error = "Amount must be a valid number"
+
+    if error is None and category not in CATEGORIES:
+        error = "Please choose a valid category"
+
+    if error is None:
+        try:
+            expense_date = date.fromisoformat(date_raw)
+            if expense_date > date.today():
+                error = "Date cannot be in the future"
+        except ValueError:
+            error = "Date must be a valid date (YYYY-MM-DD)"
+
+    return amount if error is None else None, error
 
 
 # ------------------------------------------------------------------ #
@@ -126,8 +158,31 @@ def logout():
     return redirect(url_for("landing"))
 
 
-@app.route("/profile")
-def profile():
+def build_monthly_comparison(expenses, earnings_rows):
+    spent_by_month = {}
+    for expense in expenses:
+        month = expense["date"][:7]
+        spent_by_month[month] = spent_by_month.get(month, 0.0) + expense["amount"]
+
+    earnings_by_month = {row["month"]: row["amount"] for row in earnings_rows}
+    months = sorted(set(spent_by_month) | set(earnings_by_month), reverse=True)
+
+    comparison = []
+    for month in months:
+        earnings_amount = earnings_by_month.get(month)
+        spent = spent_by_month.get(month)
+        comparison.append(
+            {
+                "month": month,
+                "earnings": earnings_amount,
+                "spent": spent,
+                "net": earnings_amount - spent if earnings_amount is not None and spent is not None else None,
+            }
+        )
+    return comparison
+
+
+def render_profile(error=None):
     if session.get("user_id") is None:
         return redirect(url_for("login"))
 
@@ -149,6 +204,7 @@ def profile():
 
     transactions = [
         {
+            "id": expense["id"],
             "date": expense["date"],
             "description": expense["description"] or "",
             "category": expense["category"],
@@ -193,7 +249,15 @@ def profile():
         from_date=from_date,
         to_date=to_date,
         category_breakdown=build_category_breakdown(expenses),
+        monthly_comparison=build_monthly_comparison(expenses, get_earnings_by_user_id(user["id"])),
+        current_month=date.today().strftime("%Y-%m"),
+        earnings_error=error,
     )
+
+
+@app.route("/profile")
+def profile():
+    return render_profile()
 
 
 @app.route("/expenses/add", methods=["GET", "POST"])
@@ -207,24 +271,7 @@ def add_expense():
         date_raw = request.form.get("date", "").strip()
         description = request.form.get("description", "").strip() or None
 
-        error = None
-        try:
-            amount = float(amount_raw)
-            if amount <= 0:
-                error = "Amount must be greater than zero"
-        except ValueError:
-            error = "Amount must be a valid number"
-
-        if error is None and category not in CATEGORIES:
-            error = "Please choose a valid category"
-
-        if error is None:
-            try:
-                expense_date = date.fromisoformat(date_raw)
-                if expense_date > date.today():
-                    error = "Date cannot be in the future"
-            except ValueError:
-                error = "Date must be a valid date (YYYY-MM-DD)"
+        amount, error = validate_expense_input(amount_raw, category, date_raw)
 
         if error is not None:
             return render_template(
@@ -239,14 +286,79 @@ def add_expense():
     )
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id)
+    if expense is None or expense["user_id"] != session["user_id"]:
+        return "Expense not found", 404
+
+    if request.method == "POST":
+        amount_raw = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date_raw = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip() or None
+
+        amount, error = validate_expense_input(amount_raw, category, date_raw)
+
+        if error is not None:
+            return render_template(
+                "edit_expense.html", expense=expense, error=error, categories=CATEGORIES
+            )
+
+        update_expense(id, amount, category, date_raw, description)
+        return redirect(url_for("profile"))
+
+    return render_template("edit_expense.html", expense=expense, categories=CATEGORIES)
 
 
-@app.route("/expenses/<int:id>/delete")
-def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+@app.route("/expenses/<int:id>/delete", methods=["POST"])
+def delete_expense_route(id):
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id)
+    if expense is None or expense["user_id"] != session["user_id"]:
+        return "Expense not found", 404
+
+    delete_expense(id)
+    return redirect(url_for("profile"))
+
+
+@app.route("/earnings", methods=["POST"])
+def earnings():
+    if session.get("user_id") is None:
+        return redirect(url_for("login"))
+
+    month = request.form.get("month", "").strip()
+    amount_raw = request.form.get("amount", "").strip()
+
+    error = None
+    if not re.fullmatch(r"\d{4}-\d{2}", month):
+        error = "Month must be a valid month (YYYY-MM)"
+    else:
+        try:
+            date.fromisoformat(month + "-01")
+        except ValueError:
+            error = "Month must be a valid month (YYYY-MM)"
+
+    if error is None:
+        try:
+            amount = float(amount_raw)
+            if not math.isfinite(amount):
+                error = "Amount must be a valid number"
+            elif amount <= 0:
+                error = "Amount must be greater than zero"
+        except ValueError:
+            error = "Amount must be a valid number"
+
+    if error is not None:
+        return render_profile(error=error)
+
+    upsert_earnings(session["user_id"], month, amount)
+    return redirect(url_for("profile"))
 
 
 if __name__ == "__main__":

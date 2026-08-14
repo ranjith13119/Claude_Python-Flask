@@ -1,6 +1,6 @@
 # CLAUDE.md — Spendly (Claude Code companion to AGENTS.md)
 
-Spendly: a Flask expense tracker built incrementally as a teaching project ("Steps 1–9").
+Spendly: a Flask expense tracker built incrementally as a teaching project ("Steps 1–10").
 This file is the roadmap + conventions reference that the `.claude/commands/` workflow depends on.
 
 ## Roadmap & Status
@@ -14,8 +14,9 @@ This file is the roadmap + conventions reference that the `.claude/commands/` wo
 | 05 | Backend connection | `.claude/spec/05-backend-connection.md` | ✅ Complete (tests: 15/15) |
 | 06 | Date filter for profile page | `.claude/spec/06-date-filter-profile.md` | ✅ Complete (tests: 18/18) |
 | 07 | Add expense | `.claude/spec/07-add-expense.md` | ✅ Complete (tests: 24/24) |
-| 08 | Edit expense | — | ⬜ Pending |
-| 09 | Delete expense | — | ⬜ Pending |
+| 08 | Edit expense | `.claude/spec/08-edit-expense.md` | ✅ Complete (tests: 23/23) |
+| 09 | Delete expense | `.claude/spec/09-delete-expense.md` | ✅ Complete (tests: 10/10) |
+| 10 | Monthly earnings | `.claude/spec/10-monthly-earnings.md` | ✅ Complete (tests: 19/19) |
 
 Specs live in `.claude/spec/` (mirrored in `.opencode/spec/`). Do not start a feature before its spec exists and is reviewed.
 
@@ -41,6 +42,8 @@ Specs live in `.claude/spec/` (mirrored in `.opencode/spec/`). Do not start a fe
 **users** — id INTEGER PK AUTOINCREMENT · name TEXT NOT NULL · email TEXT NOT NULL UNIQUE · password_hash TEXT NOT NULL · created_at TEXT DEFAULT datetime('now')
 
 **expenses** — id INTEGER PK · user_id INTEGER NOT NULL FK→users.id · amount REAL NOT NULL · category TEXT NOT NULL · date TEXT NOT NULL (YYYY-MM-DD) · description TEXT nullable · created_at TEXT DEFAULT datetime('now')
+
+**earnings** — id INTEGER PK · user_id INTEGER NOT NULL FK→users.id · month TEXT NOT NULL (YYYY-MM) · amount REAL NOT NULL · created_at TEXT DEFAULT datetime('now') · UNIQUE(user_id, month)
 
 ## Run
 
