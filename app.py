@@ -1,13 +1,53 @@
 import os
 import sqlite3
+from datetime import datetime
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
-from database.db import create_user, get_user_by_email, get_user_by_id, init_db, seed_db
+from database.db import (
+    CATEGORIES,
+    create_user,
+    get_expenses_by_user_id,
+    get_user_by_email,
+    get_user_by_id,
+    init_db,
+    seed_db,
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SPENDLY_SECRET_KEY", "dev-secret-key")
+
+
+# ------------------------------------------------------------------ #
+# Helpers                                                             #
+# ------------------------------------------------------------------ #
+
+def format_rupee(amount):
+    return f"₹{amount:,.2f}"
+
+
+def build_category_breakdown(expenses):
+    totals = {}
+    for expense in expenses:
+        totals[expense["category"]] = totals.get(expense["category"], 0.0) + expense["amount"]
+
+    grand_total = sum(totals.values())
+    if grand_total <= 0:
+        return []
+
+    breakdown = []
+    for category in CATEGORIES:
+        if category not in totals:
+            continue
+        breakdown.append(
+            {
+                "category": category,
+                "total": format_rupee(totals[category]),
+                "percent": round(totals[category] / grand_total * 100),
+            }
+        )
+    return breakdown
 
 
 # ------------------------------------------------------------------ #
@@ -81,27 +121,51 @@ def profile():
     if session.get("user_id") is None:
         return redirect(url_for("login"))
 
+    user = get_user_by_id(session["user_id"])
+    if user is None:
+        return redirect(url_for("login"))
+
+    expenses = get_expenses_by_user_id(user["id"])
+
+    total_spent = sum(expense["amount"] for expense in expenses)
+    transaction_count = len(expenses)
+
+    category_totals = {}
+    for expense in expenses:
+        category_totals[expense["category"]] = (
+            category_totals.get(expense["category"], 0.0) + expense["amount"]
+        )
+    top_category = max(category_totals, key=category_totals.get) if category_totals else "-"
+
+    transactions = [
+        {
+            "date": expense["date"],
+            "description": expense["description"] or "",
+            "category": expense["category"],
+            "amount": format_rupee(expense["amount"]),
+        }
+        for expense in expenses
+    ]
+
+    member_since = user["created_at"][:7]
+    if len(member_since) == 7:
+        try:
+            member_since = datetime.strptime(member_since, "%Y-%m").strftime("%B %Y")
+        except ValueError:
+            pass
+
     return render_template(
         "profile.html",
-        name="Demo User",
-        email="demo@spendly.com",
-        member_since="March 2026",
+        name=user["name"],
+        email=user["email"],
+        member_since=member_since,
         stats={
-            "total_spent": "₹12,450",
-            "transaction_count": 24,
-            "top_category": "Food",
+            "total_spent": format_rupee(total_spent),
+            "transaction_count": transaction_count,
+            "top_category": top_category,
         },
-        transactions=[
-            {"date": "2026-03-14", "description": "Lunch at cafe", "category": "Food", "amount": "₹320"},
-            {"date": "2026-03-12", "description": "Metro card top-up", "category": "Transport", "amount": "₹500"},
-            {"date": "2026-03-10", "description": "Electricity bill", "category": "Bills", "amount": "₹2,400"},
-        ],
-        category_breakdown=[
-            {"category": "Food", "total": "₹4,520", "percent": 38},
-            {"category": "Bills", "total": "₹3,100", "percent": 25},
-            {"category": "Transport", "total": "₹1,800", "percent": 14},
-            {"category": "Other", "total": "₹3,030", "percent": 23},
-        ],
+        transactions=transactions,
+        category_breakdown=build_category_breakdown(expenses),
     )
 
 

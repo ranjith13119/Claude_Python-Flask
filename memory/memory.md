@@ -55,3 +55,14 @@ Log of important implementation decisions and conversation outcomes.
 - Tests: `tests/test_04-profile.py` — 12/12 (access control 302/200, identity, stat cards, table columns, breakdown percents, navbar state, no hash leak, extends base.html, no hex/inline styles). Full suite 59/59.
 - Template-rule tests only assert `{% extends "base.html" %}` + no hex + no inline styles — url_for lives in base.html, not per-template (learned: don't assert url_for() inside child templates).
 - Spec: `.claude/spec/04-profile.md` (+ `.opencode/spec/` mirror). Plans in both plans folders; `Logs/04-profile.md` created.
+
+## 2026-08-13 — Step 05 Backend Connection (implemented + tested)
+
+- `database/db.py`: added `get_expenses_by_user_id(user_id)` — parameterized `SELECT ... WHERE user_id = ? ORDER BY date DESC`, returns list of sqlite3.Row.
+- `app.py`: `/profile` now fully live — session guard kept, stale-session redirect, computes total_spent / transaction_count / top_category (max category total, `-` when none) / transactions / category_breakdown (₹ totals + integer percents) / member_since from created_at. Helpers: `format_rupee()` (`₹{:,.2f}`) + `build_category_breakdown()` (CATEGORIES order, deterministic ties).
+- `static/css/style.css`: extended `.bar-fill.pct-N` 0–100 so live percents render (was only 14/23/25/38).
+- Template `profile.html` unchanged — Step 04 design preserved, dict-style access (`stats["total_spent"]`, `tx["date"]`).
+- Seed data note: top category is **Shopping** (₹79.99), not Food.
+- Tests: `tests/test_05-backend-connection.py` — 15/15 pass. Updated `test_04-profile.py` hardcoded assertions (March 2026 → Member since, ₹12,450 → ₹294.64, 38%/25%/14%/23% → 26%/27%/20%) since Step 05 makes data live. Full suite 74/74.
+- Branch: `feature/backend-connection`. Spec: `.claude/spec/05-backend-connection.md` (+ `.opencode/spec/`). Plan: `.opencode/plans/05-backend-connection.md` (`.claude/plans/` is gitignored). Log: `Logs/05-backend-connection.md`.
+- Stashed agents/commands (test-writer/quality-reviewer/security-reviewer/test-runner, code-review command) restored from stash — committed on this branch as separate chore commit.

@@ -1,5 +1,6 @@
 ---
-description: Commit, push, create PR, merge, and clean up after a Spendly feature is complete
+description: Commit, push, create PR, merge, and clean up after a feature is complete
+allowed-tools: Read, Bash, mcp__github__create_pull_request, mcp__github__merge_pull_request, mcp__github__delete_branch
 ---
 
 ## Step 1 — Identify current branch
@@ -15,7 +16,7 @@ git diff --staged
 git diff
 git log main..HEAD --oneline
 ```
-Read `.claude/specs/` to find the spec for the current feature.
+Read .claude/specs/ to find the spec for the current feature.
 
 Generate a Conventional Commit message:
 - feat: new feature
@@ -45,8 +46,9 @@ git push -u origin CURRENT_BRANCH
 ```
 Report: "✓ Pushed — CURRENT_BRANCH"
 
-## Step 5 — Create PR
-Use the GitHub MCP server (if connected; otherwise the `gh` CLI) to create a pull request from CURRENT_BRANCH into main.
+## Step 5 — Create PR via GitHub MCP
+Use the GitHub MCP server to create a pull request
+from CURRENT_BRANCH into main.
 
 Title: plain English feature name, no conventional commit prefix
 Example: "Add delete expense functionality"
@@ -71,13 +73,15 @@ mark every item as checked [x]>
 
 Report: "✓ PR created — <PR URL>"
 
-## Step 6 — Merge PR
-Merge the pull request just created. Use squash merge.
+## Step 6 — Merge PR via GitHub MCP
+Use the GitHub MCP server to merge the pull request
+just created. Use squash merge.
 
 Report: "✓ PR merged to main"
 
-## Step 7 — Delete remote branch
-Delete CURRENT_BRANCH from GitHub after the merge.
+## Step 7 — Delete remote branch via GitHub MCP
+Use the GitHub MCP server to delete CURRENT_BRANCH
+from GitHub after the merge.
 
 Report: "✓ Remote branch deleted"
 
@@ -96,7 +100,7 @@ Report: "✓ Local branch deleted"
 
 ## Final summary
 Print:
-```
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 /ship-feature complete
 ✓ Committed — <message>
 ✓ Pushed — <branch>
@@ -105,12 +109,13 @@ Print:
 ✓ Switched to main
 ✓ Local branch deleted
 Next: run /create-spec for the next feature
-```
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 
 ## Rules
 - Never commit directly to main
 - Always use squash merge
 - Always delete both remote and local branch after merge
-- If GitHub MCP is not connected and `gh` is unavailable, stop and say: "GitHub MCP is not connected and gh CLI is not available. Check your GitHub setup."
-- If push fails due to no upstream, use `git push -u origin CURRENT_BRANCH`
+- If GitHub MCP is not connected stop and say:
+  "GitHub MCP is not connected. Run /mcp to check connection."
+- If push fails due to no upstream, use git push -u origin CURRENT_BRANCH
 - Never proceed to merge if PR creation fails

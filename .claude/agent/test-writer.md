@@ -19,7 +19,7 @@ Please check the spec name and try again."
 
 ## Step 1: Write Tests
 
-Invoke the **test-writer** subagent with the 
+Invoke the **spendly-test-writer** subagent with the 
 following context:
 
 - Spec file to base tests on: 
